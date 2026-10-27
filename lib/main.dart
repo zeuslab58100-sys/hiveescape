@@ -3198,10 +3198,20 @@ class _GamePageState extends State<GamePage> {
       'ca-app-pub-3940256099942544/1033173712';
   static const String _androidProductionInterstitialId =
       'ca-app-pub-2076419085002638/1889509698';
+  static const String _iosTestInterstitialId =
+      'ca-app-pub-3940256099942544/4411468910';
+  static const String _iosProductionInterstitialId =
+      'ca-app-pub-2076419085002638/6229478290';
 
   String get _androidInterstitialId => kReleaseMode
       ? _androidProductionInterstitialId
       : _androidTestInterstitialId;
+
+  String get _interstitialAdUnitId => Platform.isIOS
+      ? (kReleaseMode
+          ? _iosProductionInterstitialId
+          : _iosTestInterstitialId)
+      : _androidInterstitialId;
 
   static const String _soundEnabledKey = 'hive_escape_sound_enabled';
   static const String _vibrationEnabledKey = 'hive_escape_vibration_enabled';
@@ -3310,7 +3320,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _prepareMilestoneInterstitialIfNeeded() async {
-    if (!Platform.isAndroid ||
+    if (!(Platform.isAndroid || Platform.isIOS) ||
         !mounted ||
         !adRequestsAllowedNotifier.value) {
       return;
@@ -3352,7 +3362,7 @@ class _GamePageState extends State<GamePage> {
     _milestoneInterstitialLoading = true;
 
     InterstitialAd.load(
-      adUnitId: _androidInterstitialId,
+      adUnitId: _interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -3387,7 +3397,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> _showMilestoneInterstitialIfNeeded() async {
-    if (!Platform.isAndroid ||
+    if (!(Platform.isAndroid || Platform.isIOS) ||
         !adRequestsAllowedNotifier.value ||
         !_isCurrentLevelInterstitialMilestone) {
       return;
@@ -5254,15 +5264,23 @@ class _AdMobBannerState extends State<_AdMobBanner> {
   bool _isLoaded = false;
   bool _isLoading = false;
 
-  // In DEBUG usiamo SEMPRE l'ID test ufficiale Google.
-  // In RELEASE verrà usato l'ID reale di Hive Escape.
+  // In DEBUG usiamo gli ID di test Google specifici per Android e iOS.
+  // In RELEASE usiamo gli ID reali della rispettiva piattaforma.
   static const String _androidTestBannerId =
       'ca-app-pub-3940256099942544/6300978111';
   static const String _androidProductionBannerId =
       'ca-app-pub-2076419085002638/3237250386';
+  static const String _iosTestBannerId =
+      'ca-app-pub-3940256099942544/2934735716';
+  static const String _iosProductionBannerId =
+      'ca-app-pub-2076419085002638/1728880525';
 
   String get _androidBannerId =>
       kReleaseMode ? _androidProductionBannerId : _androidTestBannerId;
+
+  String get _bannerAdUnitId => Platform.isIOS
+      ? (kReleaseMode ? _iosProductionBannerId : _iosTestBannerId)
+      : _androidBannerId;
 
   @override
   void initState() {
@@ -5298,7 +5316,7 @@ class _AdMobBannerState extends State<_AdMobBanner> {
   }
 
   void _loadBanner() {
-    if (!Platform.isAndroid ||
+    if (!(Platform.isAndroid || Platform.isIOS) ||
         !adRequestsAllowedNotifier.value ||
         _isLoaded ||
         _isLoading) {
@@ -5308,7 +5326,7 @@ class _AdMobBannerState extends State<_AdMobBanner> {
     _isLoading = true;
 
     final banner = BannerAd(
-      adUnitId: _androidBannerId,
+      adUnitId: _bannerAdUnitId,
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -5356,7 +5374,7 @@ class _AdMobBannerState extends State<_AdMobBanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (!Platform.isAndroid) {
+    if (!(Platform.isAndroid || Platform.isIOS)) {
       return const SizedBox(height: 60);
     }
 
